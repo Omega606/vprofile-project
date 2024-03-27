@@ -1,4 +1,4 @@
-# vprofile-project base code
+# vprofile-project docker containerization
 
 Prerequisites
 
@@ -6,6 +6,7 @@ Prerequisites
 * Maven 3 or later
 * MySQL 5.6 or later
 * Apache Tomcat 8.5 or up to Tomcat 9
+* Docker 25.0 or later
 
 Technologies
 
