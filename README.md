@@ -7,6 +7,7 @@ Prerequisites
 * MySQL 5.6 or later
 * Apache Tomcat 8.5 or up to Tomcat 9
 * Docker 25.0 or later
+* Vagrant 2.4.1 or later
 
 Technologies
 
