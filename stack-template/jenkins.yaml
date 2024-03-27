@@ -1,0 +1,104 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Jenkins Server Template"
+Parameters:
+  RoleTemplateName:
+    Description: Name of the base stack with all infra resources
+    Type: String
+    Default: cicd-s3-role
+  MyIP:
+    Type: String
+  KeyName:
+    Type: String
+  InstanceType:
+    Type: String
+    Default: t2.small
+
+# Ubuntu 20.04 LTS AMI
+Mappings:
+  AmiRegionMap:
+    us-east-1:
+      AMI: ami-0bcc094591f354be2
+    us-east-2:
+      AMI: ami-0b4750268a88e78e0
+    eu-west-1:
+      AMI: ami-0ea3405d2d2522162
+    us-west-1:
+      AMI: ami-0dd005d3eb03f66e8
+    ap-south-1:
+      AMI: ami-02b5fbc2cb28b77b8
+    us-west-2:
+      AMI: ami-0a634ae95e11c6f91
+Resources:
+  JenkinsServer:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      ImageId: !FindInMap
+        #        Fn::FindInMap:
+        - AmiRegionMap
+        - !Ref AWS::Region
+        - AMI
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - ""
+            - - "Jenkins in "
+              - !Ref AWS::Region
+      SecurityGroups:
+        - !Ref JenkinsSG
+      IamInstanceProfile:
+        Fn::ImportValue:
+          Fn::Sub: "${RoleTemplateName}-VPS3RoleProfileName"
+      UserData:
+        Fn::Base64:                                # YAML makes userdata much cleaner
+          !Sub |
+          #!/bin/bash
+          sudo apt update
+          sudo apt install openjdk-17-jdk -y
+          sudo apt install maven git wget unzip -y
+          sudo apt install awscli -y
+          curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+          echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/ | sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null  
+          sudo apt-get update
+          sudo apt-get install jenkins -y
+          sleep 10
+          systemctl stop jenkins
+          sleep 10
+          aws s3 cp s3://vprofile-cicd-stack-backup-16.02.2024/jenkins_cicdjobs_3.tar.gz /var/lib/
+          cd /var/lib/
+          tar xzvf jenkins_cicdjobs_3.tar.gz
+          chown jenkins.jenkins /var/lib/jenkins -R
+          reboot
+  JenkinsSG:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupName: JenkinsSG
+      GroupDescription: Allow SSH & HTTP from myip
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: !Ref MyIP
+
+        - IpProtocol: tcp
+          FromPort: '8080'
+          ToPort: '8080'
+          CidrIp: 0.0.0.0/0
+
+Outputs:
+  MyEC2InstancePublicIP:
+    Value: !GetAtt JenkinsServer.PublicIp
+  MyEC2InstancePrivateIP:
+    Value: !GetAtt JenkinsServer.PrivateIp
+  MyEC2InstanceID:
+    Value: !Ref JenkinsServer
+  JenkSecurityGroupId:
+    Description: Security Group 1 ID
+    Value:
+      Fn::GetAtt:
+        - JenkinsSG
+        - GroupId
+    Export:
+      Name: jenkins-SGID
+#        Fn::Sub: "${AWS::StackName}-SecurityGroupID"

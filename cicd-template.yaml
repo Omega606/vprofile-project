@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Root Template"
+Parameters:
+  KeyPair:
+    Description: Amazon EC2 Key Pair
+    Type: "AWS::EC2::KeyPair::KeyName"
+  MyIP:
+    Description: Assigning IP
+    Type: String
+    Default: 0.0.0.0/0
+Resources:
+  S3RoleforCiCd:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://vprofile-cicd-templates-101.s3.us-east-2.amazonaws.com/stack-template/cicd-s3-role.yaml
+  JenkinsServer:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: S3RoleforCiCd
+    Properties:
+      TemplateURL: https://vprofile-cicd-templates-101.s3.us-east-2.amazonaws.com/stack-template/jenkins.yaml
+      Parameters:
+        KeyName: !Ref KeyPair
+        MyIP: !Ref MyIP
+  App01qa:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: JenkinsServer
+    Properties:
+      TemplateURL: https://vprofile-cicd-templates-101.s3.us-east-2.amazonaws.com/stack-template/app01qa.yaml
+      Parameters:
+        KeyName: !Ref KeyPair
+        MyIP: !Ref MyIP
+  NexusServer:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: JenkinsServer
+    Properties:
+      TemplateURL: https://vprofile-cicd-templates-101.s3.us-east-2.amazonaws.com/stack-template/nexus.yaml
+      Parameters:
+        KeyName: !Ref KeyPair
+        MyIP: !Ref MyIP
+  SonarServer:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: JenkinsServer
+    Properties:
+      TemplateURL: https://vprofile-cicd-templates-101.s3.us-east-2.amazonaws.com/stack-template/sonar.yaml
+      Parameters:
+        KeyName: !Ref KeyPair
+        MyIP: !Ref MyIP
+  DB01qa:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: App01qa
+    Properties:
+      TemplateURL: https://vprofile-cicd-templates-101.s3.us-east-2.amazonaws.com/stack-template/db01qa.yaml
+      Parameters:
+        KeyName: !Ref KeyPair
+        MyIP: !Ref MyIP
+  WindowsTestServer:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: JenkinsServer
+    Properties:
+      TemplateURL: https://vprofile-cicd-templates-101.s3.us-east-2.amazonaws.com/stack-template/windows-testing.yaml
+      Parameters:
+        KeyName: !Ref KeyPair
+        MyIP: !Ref MyIP

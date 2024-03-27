@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Test Root Template"
+Parameters:
+  KeyPair:
+    Description: Amazon EC2 Key Pair
+    Type: "AWS::EC2::KeyPair::KeyName"
+  MyIP:
+    Description: Assigning IP
+    Type: String
+    Default: 0.0.0.0/0
+Resources:
+  S3RoleforCiCd:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://vprofile-cicd-templates-101.s3.us-east-2.amazonaws.com/stack-template/cicd-s3-role.yaml
+  AppTest:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: S3RoleforCiCd
+    Properties:
+      TemplateURL: https://vprofile-cicd-templates-101.s3.us-east-2.amazonaws.com/stack-template/app-test.yaml
+      Parameters:
+        KeyName: !Ref KeyPair
+        MyIP: !Ref MyIP
+  DB01qa:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: AppTest
+    Properties:
+      TemplateURL: https://vprofile-cicd-templates-101.s3.us-east-2.amazonaws.com/stack-template/db01qa-test.yaml
+      Parameters:
+        KeyName: !Ref KeyPair
+        MyIP: !Ref MyIP
