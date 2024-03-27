@@ -1,3 +1,5 @@
 **/.idea/
+**/.terraform/
 *.pem
 *.pub
+*.hcl
