@@ -1,4 +1,4 @@
-# vprofile-project base code
+# vprofile-project ansible automation on AWS
 
 Prerequisites
 
@@ -6,12 +6,9 @@ Prerequisites
 * Maven 3 or later
 * MySQL 5.6 or later
 * Apache Tomcat 8.5 or up to Tomcat 9
+* Ansible 2.10 or later
 
-Technologies
+Ansible Installation Steps
 
-* Spring MVC
-* Spring Security
-* Spring Data JPA
-* Maven
-* JSP
-* MySQL
+* sudo apt install python3-pip -y
+* sudo pip3 install ansible
