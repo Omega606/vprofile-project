@@ -1,4 +1,4 @@
-# vprofile-project base code
+# vprofile-project terraform automation on AWS
 
 Prerequisites
 
@@ -6,12 +6,4 @@ Prerequisites
 * Maven 3 or later
 * MySQL 5.6 or later
 * Apache Tomcat 8.5 or up to Tomcat 9
-
-Technologies
-
-* Spring MVC
-* Spring Security
-* Spring Data JPA
-* Maven
-* JSP
-* MySQL
+* Terraform 1.7.4 or later
